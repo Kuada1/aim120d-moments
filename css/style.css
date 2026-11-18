@@ -121,6 +121,8 @@ h1 .red{color:var(--red)}
 }
 .vp-views button:hover{border-color:var(--ink);color:var(--ink)}
 .vp-views button.on{background:var(--ink);border-color:var(--ink);color:var(--paper)}
+.vp-views button.pause{font-weight:700;min-width:86px}
+.vp-views button.pause.on{background:var(--red);border-color:var(--red);color:#fff}
 .vp-hint{
   position:absolute;right:12px;top:50%;transform:translateY(-50%) rotate(90deg);transform-origin:center;
   font-size:9px;letter-spacing:.2em;color:var(--ink-3);pointer-events:none;white-space:nowrap;

@@ -32,6 +32,7 @@
   var AUTO_ORDER = ['pull', 'yaw', 'roll', 'combo'];
 
   var rollAngle = 0;
+  var paused = false;
   var tween = null;
   var auto = { on: false, idx: -1, next: 0 };
   var last = performance.now();
@@ -120,6 +121,13 @@
   function resetAll() {
     stopAuto();
     tween = null;
+    if (paused) {
+      paused = false;
+      var pbBtn = $('pause-btn');
+      pbBtn.textContent = '暂停动画';
+      pbBtn.classList.remove('on');
+      pbBtn.setAttribute('aria-pressed', 'false');
+    }
     state.mach = 0.85;
     state.altitude = 5000;
     state.alpha = 8;
@@ -135,6 +143,18 @@
     for (var j = 0; j < pb.length; j++) pb[j].classList.remove('on');
     var vb = document.querySelectorAll('.vp-views button[data-view]');
     for (var k = 0; k < vb.length; k++) vb[k].classList.toggle('on', vb[k].getAttribute('data-view') === 'iso');
+  }
+
+  function togglePause() {
+    paused = !paused;
+    var b = $('pause-btn');
+    b.textContent = paused ? '继续动画' : '暂停动画';
+    b.classList.toggle('on', paused);
+    b.setAttribute('aria-pressed', paused ? 'true' : 'false');
+    if (paused) {
+      stopAuto();
+      tween = null;
+    }
   }
 
   function startAuto() {
@@ -231,14 +251,19 @@
         btn.addEventListener('click', function () {
           var name = btn.getAttribute('data-preset');
           if (name === 'auto') {
+            if (paused) togglePause();
             if (auto.on) stopAuto(); else startAuto();
           } else {
             stopAuto();
-            setPreset(name, false);
+            // while paused there is no tween: apply the preset instantly
+            setPreset(name, paused);
           }
         });
       })(pb[j]);
     }
+
+    // pause / resume
+    $('pause-btn').addEventListener('click', togglePause);
 
     // one-click restore
     $('reset-btn').addEventListener('click', resetAll);
@@ -285,7 +310,7 @@
     onResize();
 
     last = performance.now();
-    window.__APP = { scene: scene, charts: charts, state: state, aero: Aero, getLast: function () { return lastRes; } };
+    window.__APP = { scene: scene, charts: charts, state: state, aero: Aero, getLast: function () { return lastRes; }, getRoll: function () { return rollAngle; }, isPaused: function () { return paused; } };
     requestAnimationFrame(tick);
   }
 
@@ -296,9 +321,9 @@
     last = now;
     if (dt < 0) dt = 0;
 
-    applyTween(now);
+    if (!paused) applyTween(now);
 
-    if (auto.on && now >= auto.next) {
+    if (!paused && auto.on && now >= auto.next) {
       auto.idx = (auto.idx + 1) % AUTO_ORDER.length;
       setPreset(AUTO_ORDER[auto.idx], false);
       auto.next = now + 5400;
@@ -317,9 +342,11 @@
 
     // roll is the only axis free to rotate without changing alpha/beta:
     // animate it at the damping-balanced steady rate implied by Mx.
-    rollAngle += Math.max(-6, Math.min(6, rates.p)) * dt;
-    if (rollAngle > Math.PI * 2) rollAngle -= Math.PI * 2;
-    if (rollAngle < -Math.PI * 2) rollAngle += Math.PI * 2;
+    if (!paused) {
+      rollAngle += Math.max(-6, Math.min(6, rates.p)) * dt;
+      if (rollAngle > Math.PI * 2) rollAngle -= Math.PI * 2;
+      if (rollAngle < -Math.PI * 2) rollAngle += Math.PI * 2;
+    }
 
     scene.setState({
       roll: res.Mx, pitch: res.My, yaw: -res.Mz,
@@ -332,12 +359,14 @@
     hudAcc += dt;
     if (hudAcc > 1 / 30) { updateHUD(res, rates); hudAcc = 0; }
     lastRes = res;
-    chartAcc += dt;
-    if (chartAcc > 0.05) {
-      charts.x.push(res.Mx);
-      charts.y.push(-res.Mz);
-      charts.z.push(res.My);
-      chartAcc = 0;
+    if (!paused) {
+      chartAcc += dt;
+      if (chartAcc > 0.05) {
+        charts.x.push(res.Mx);
+        charts.y.push(-res.Mz);
+        charts.z.push(res.My);
+        chartAcc = 0;
+      }
     }
   }
 

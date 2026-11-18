@@ -270,8 +270,8 @@
       mx: label('c-roll', '<span class="dot"></span>M<sub>x</sub> <b data-v>0.0</b><span class="u">N·m</span>', 22, -8),
       my: label('c-yaw', '<span class="dot"></span>M<sub>y</sub> <b data-v>0.0</b><span class="u">N·m</span>', 24, 4),
       mz: label('c-pitch', '<span class="dot"></span>M<sub>z</sub> <b data-v>0.0</b><span class="u">N·m</span>', 20, 16),
-      cg: label('ink', '<span class="dot"></span>CG', -6, 17),
-      dim: label('dim', 'L 3.66 m', 0, -13),
+      cg: label('ink', '<span class="dot"></span>质心', -6, 17),
+      dim: label('dim', '全长 3.66 m', 0, -13),
       ax: label('ink axis', 'x', 14, -2),
       ay: label('ink axis', 'y', 10, -14),
       az: label('ink axis', 'z', 14, -2)
