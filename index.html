@@ -16,25 +16,17 @@
 <div class="page">
 
   <header class="masthead">
-    <div class="mast-top">
-      <span class="kicker">AERODYNAMIC MOMENT STUDY</span>
-      <span class="kicker zh">气动力矩 · 三轴分量研究</span>
-      <span class="kicker num">NO. 001 — 2026</span>
-    </div>
-    <div class="mast-main">
-      <div class="mast-title">
-        <h1><span class="ink">AIM-</span><span class="red">120D</span></h1>
-        <div class="title-sub">
-          <span class="rule-short"></span>
-          <span>PITCH · YAW · ROLL MOMENTS</span>
-          <span class="zh">俯仰 &nbsp;/&nbsp; 偏航 &nbsp;/&nbsp; 滚转力矩</span>
-        </div>
+    <div class="mast-row">
+      <div class="brand">
+        <span class="kicker">AERODYNAMIC MOMENT STUDY · 气动力矩研究</span>
+        <h1>AIM-<span class="red">120D</span></h1>
       </div>
+      <p class="mast-sub">俯仰 · 偏航 · 滚转力矩<br><span>PITCH / YAW / ROLL MOMENTS</span></p>
       <dl class="mast-meta">
-        <div><dt>PLATFORM</dt><dd>AIM-120D AMRAAM</dd></div>
-        <div><dt>BODY LENGTH</dt><dd>3.66 m</dd></div>
-        <div><dt>REF. Ø / SPAN</dt><dd>0.178 m / 0.526 m</dd></div>
-        <div><dt>MASS / CG</dt><dd>152 kg / 50 % L</dd></div>
+        <div><dt>PLATFORM</dt><dd>AIM-120D</dd></div>
+        <div><dt>LENGTH</dt><dd>3.66 m</dd></div>
+        <div><dt>REF. Ø / SPAN</dt><dd>0.178 / 0.526 m</dd></div>
+        <div><dt>MASS</dt><dd>152 kg</dd></div>
         <div><dt>GEOMETRY</dt><dd>AIM120D.blend</dd></div>
       </dl>
     </div>
@@ -71,16 +63,16 @@
 
       <section class="mod">
         <header class="mod-h"><span class="idx">01</span><h2>FLIGHT CONDITION</h2><span class="zh">飞行状态</span></header>
-
-        <div class="ctl" data-key="mach">
-          <div class="ctl-top"><label for="mach">MACH</label><output id="mach-v">0.85</output></div>
-          <input id="mach" type="range" min="0.3" max="3" step="0.01" value="0.85">
+        <div class="controls two">
+          <div class="ctl" data-key="mach">
+            <div class="ctl-top"><label for="mach">MACH</label><output id="mach-v">0.85</output></div>
+            <input id="mach" type="range" min="0.3" max="3" step="0.01" value="0.85">
+          </div>
+          <div class="ctl" data-key="altitude">
+            <div class="ctl-top"><label for="altitude">ALTITUDE <span class="u">km</span></label><output id="altitude-v">5.0</output></div>
+            <input id="altitude" type="range" min="0" max="20000" step="100" value="5000">
+          </div>
         </div>
-        <div class="ctl" data-key="altitude">
-          <div class="ctl-top"><label for="altitude">ALTITUDE <span class="u">km</span></label><output id="altitude-v">5.0</output></div>
-          <input id="altitude" type="range" min="0" max="20000" step="100" value="5000">
-        </div>
-
         <div class="derived">
           <div><span>V<sub>∞</sub></span><b id="vinf">—</b><i>m/s</i></div>
           <div><span>q<sub>∞</sub></span><b id="qinf">—</b><i>kPa</i></div>
@@ -89,26 +81,27 @@
 
       <section class="mod">
         <header class="mod-h"><span class="idx">02</span><h2>ATTITUDE / CONTROL</h2><span class="zh">姿态与操纵</span></header>
-
-        <div class="ctl" data-key="alpha">
-          <div class="ctl-top"><label for="alpha">α <span class="u">迎角</span></label><output id="alpha-v">8.0</output></div>
-          <input id="alpha" type="range" min="-20" max="25" step="0.5" value="8">
-        </div>
-        <div class="ctl" data-key="beta">
-          <div class="ctl-top"><label for="beta">β <span class="u">侧滑角</span></label><output id="beta-v">0.0</output></div>
-          <input id="beta" type="range" min="-20" max="20" step="0.5" value="0">
-        </div>
-        <div class="ctl" data-key="deltaE">
-          <div class="ctl-top"><label for="deltaE">δ<sub>e</sub> <span class="u">俯仰指令</span></label><output id="deltaE-v">0.0</output></div>
-          <input id="deltaE" type="range" min="-15" max="15" step="0.5" value="0">
-        </div>
-        <div class="ctl" data-key="deltaR">
-          <div class="ctl-top"><label for="deltaR">δ<sub>r</sub> <span class="u">偏航指令</span></label><output id="deltaR-v">0.0</output></div>
-          <input id="deltaR" type="range" min="-15" max="15" step="0.5" value="0">
-        </div>
-        <div class="ctl" data-key="deltaA">
-          <div class="ctl-top"><label for="deltaA">δ<sub>a</sub> <span class="u">滚转指令</span></label><output id="deltaA-v">0.0</output></div>
-          <input id="deltaA" type="range" min="-15" max="15" step="0.5" value="0">
+        <div class="controls two">
+          <div class="ctl" data-key="alpha">
+            <div class="ctl-top"><label for="alpha">α <span class="u">迎角</span></label><output id="alpha-v">8.0</output></div>
+            <input id="alpha" type="range" min="-20" max="25" step="0.5" value="8">
+          </div>
+          <div class="ctl" data-key="beta">
+            <div class="ctl-top"><label for="beta">β <span class="u">侧滑角</span></label><output id="beta-v">0.0</output></div>
+            <input id="beta" type="range" min="-20" max="20" step="0.5" value="0">
+          </div>
+          <div class="ctl" data-key="deltaE">
+            <div class="ctl-top"><label for="deltaE">δ<sub>e</sub> <span class="u">俯仰指令</span></label><output id="deltaE-v">0.0</output></div>
+            <input id="deltaE" type="range" min="-15" max="15" step="0.5" value="0">
+          </div>
+          <div class="ctl" data-key="deltaR">
+            <div class="ctl-top"><label for="deltaR">δ<sub>r</sub> <span class="u">偏航指令</span></label><output id="deltaR-v">0.0</output></div>
+            <input id="deltaR" type="range" min="-15" max="15" step="0.5" value="0">
+          </div>
+          <div class="ctl wide" data-key="deltaA">
+            <div class="ctl-top"><label for="deltaA">δ<sub>a</sub> <span class="u">滚转指令</span></label><output id="deltaA-v">0.0</output></div>
+            <input id="deltaA" type="range" min="-15" max="15" step="0.5" value="0">
+          </div>
         </div>
 
         <div class="presets">
@@ -175,19 +168,19 @@
 
     <div class="doc-grid">
       <article>
-        <div class="doc-letter c-roll">M<sub>x</sub></div>
+        <div class="doc-letter t-roll">M<sub>x</sub></div>
         <h3>ROLL MOMENT <span>滚转力矩</span></h3>
         <p>绕弹体纵轴 x 的力矩。它由副翼（本模型中由尾翼差动等效）与侧滑耦合产生，决定弹体的滚转角速度与滚转姿态。右翼下沉为正。</p>
         <div class="eq">M<sub>x</sub> = q<sub>∞</sub> · S · b · C<sub>l</sub></div>
       </article>
       <article>
-        <div class="doc-letter c-pitch">M<sub>y</sub></div>
+        <div class="doc-letter t-pitch">M<sub>y</sub></div>
         <h3>PITCH MOMENT <span>俯仰力矩</span></h3>
         <p>绕弹体横轴 y 的力矩。迎角与升降舵偏转改变尾部法向力，从而绕质心产生抬头或低头力矩；静稳定弹体的 C<sub>mα</sub> 为负。</p>
         <div class="eq">M<sub>y</sub> = q<sub>∞</sub> · S · d · C<sub>m</sub></div>
       </article>
       <article>
-        <div class="doc-letter c-yaw">M<sub>z</sub></div>
+        <div class="doc-letter t-yaw">M<sub>z</sub></div>
         <h3>YAW MOMENT <span>偏航力矩</span></h3>
         <p>绕弹体法向轴 z 的力矩。由侧滑角与方向舵产生，决定弹体在水平面内的指向；航向静稳定的 C<sub>nβ</sub> 为正。</p>
         <div class="eq">M<sub>z</sub> = q<sub>∞</sub> · S · d · C<sub>n</sub></div>

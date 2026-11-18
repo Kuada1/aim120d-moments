@@ -288,8 +288,8 @@
       ctx.stroke();
     }
 
-    // top-right range label: 9px, tabular-ish, quiet ink
-    ctx.font = '9px ' + FONT;
+    // top-right range label: 11px, tabular-ish, quiet ink
+    ctx.font = '11px ' + FONT;
     ctx.fillStyle = INK_LABEL;
     ctx.textAlign = 'right';
     ctx.textBaseline = 'top';

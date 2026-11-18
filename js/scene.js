@@ -85,11 +85,11 @@
     this.canvas = canvas;
     this.labelsEl = labelsEl;
     this.values = {};
-    this.autoRotate = true;
+    this.autoRotate = false;
     this.lastInput = 0;
     this.pointer = null;
-    this.spherical = { r: 4.55, theta: 0.82, phi: 0.24 };
-    this.targetSpherical = { r: 4.55, theta: 0.82, phi: 0.24 };
+    this.spherical = { r: 4.2, theta: 0.82, phi: 0.24 };
+    this.targetSpherical = { r: 4.2, theta: 0.82, phi: 0.24 };
 
     var renderer = new THREE.WebGLRenderer({
       canvas: canvas, antialias: true, alpha: true, powerPreference: 'high-performance'
@@ -275,7 +275,7 @@
       my: label('c-pitch', '<span class="dot"></span>M<sub>y</sub> <b data-v>0.0</b><span class="u">N·m</span>', 24, 4),
       mz: label('c-yaw', '<span class="dot"></span>M<sub>z</sub> <b data-v>0.0</b><span class="u">N·m</span>', 20, 16),
       cg: label('ink', '<span class="dot"></span>CG', -6, 17),
-      vinf: label('ink', 'V<sub>∞</sub> <b data-v>—</b><span class="u">m/s</span>', -34, -20),
+      vinf: label('ink', 'V<sub>∞</sub> <b data-v>—</b><span class="u">m/s</span>', 0, -24),
       dim: label('dim', 'L 3.66 m', 0, -13),
       ax: label('ink', 'x', 12, -2),
       ay: label('ink', 'y', 12, -2),
@@ -327,7 +327,7 @@
     var t = this.targetSpherical;
     if (name === 'front') { t.theta = 1.5; t.phi = 0.10; t.r = 4.7; }
     else if (name === 'side') { t.theta = 0.07; t.phi = 0.10; t.r = 5.5; }
-    else { t.theta = 0.82; t.phi = 0.24; t.r = 4.55; }
+    else { t.theta = 0.82; t.phi = 0.24; t.r = 4.2; }
     this.lastInput = performance.now();
   };
 
@@ -338,8 +338,7 @@
     this.camera.aspect = w / h;
     this.camera.updateProjectionMatrix();
     // keep the full 3.66 m airframe inside narrow viewports (phones)
-    var halfFov = this.camera.fov * Math.PI / 360;
-    this.minR = Math.max(3.4, 1.95 / (Math.tan(halfFov) * this.camera.aspect));
+
   };
 
   MissileScene.prototype.setState = function (s) {
@@ -397,7 +396,7 @@
       [this.labels.my, tipWorld(this._tips.my), true],
       [this.labels.mz, tipWorld(this._tips.mz), true],
       [this.labels.cg, new THREE.Vector3(0, 0, 0), false],
-      [this.labels.vinf, new THREE.Vector3(1.82, 0.82, 0), false],
+      [this.labels.vinf, new THREE.Vector3(1.42, 0.82, 0), false],
       [this.labels.dim, new THREE.Vector3(0, -0.66, 0), false],
       [this.labels.ax, tipWorld(new THREE.Vector3(1.02, 0, 0)), false],
       [this.labels.ay, tipWorld(new THREE.Vector3(0, 0, 1.02)), false],
@@ -413,7 +412,7 @@
       if (radial) {
         var vx = s.x - cgS.x, vy = s.y - cgS.y;
         var vm = Math.hypot(vx, vy);
-        if (vm > 1) { px += vx / vm * 26; py += vy / vm * 26; }
+        if (vm > 1) { px += vx / vm * 30; py += vy / vm * 30; }
         else { px += lab.dx; py += lab.dy; }
       } else { px += lab.dx; py += lab.dy; }
       lab.el.style.transform = 'translate3d(' + px + 'px,' + py + 'px,0) translate(-50%,-50%)';
@@ -421,17 +420,18 @@
   };
 
   MissileScene.prototype.render = function (dt) {
-    var now = performance.now();
     var t = this.targetSpherical;
-    if (this.autoRotate && !this.pointer && now - this.lastInput > 4200) {
-      t.theta += dt * 0.11;
-    }
     var k = 1 - Math.exp(-8 * dt);
     this.spherical.r += (t.r - this.spherical.r) * k;
     this.spherical.theta += (t.theta - this.spherical.theta) * k;
     this.spherical.phi += (t.phi - this.spherical.phi) * k;
 
-    var r = Math.max(this.spherical.r, this.minR || 0), th = this.spherical.theta, ph = this.spherical.phi;
+    // keep the 3.66 m airframe inside the frame at every orbit angle / aspect
+    var th = this.spherical.theta, ph = this.spherical.phi;
+    var halfFov = this.camera.fov * Math.PI / 360;
+    var projHalf = 1.83 * Math.abs(Math.cos(th)) + 0.62;
+    var fitR = projHalf / (Math.tan(halfFov) * Math.max(0.4, this.camera.aspect));
+    var r = Math.max(this.spherical.r, Math.max(3.4, fitR));
     this.camera.position.set(
       r * Math.cos(ph) * Math.sin(th),
       r * Math.sin(ph),
