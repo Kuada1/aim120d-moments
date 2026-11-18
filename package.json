@@ -1,0 +1,11 @@
+{
+  "name": "aim120d-moments",
+  "version": "1.0.0",
+  "private": true,
+  "type": "commonjs",
+  "description": "AIM-120D pitch / yaw / roll moment study — static Three.js page, Swiss International Style",
+  "scripts": {
+    "test": "node tests/aero.test.mjs",
+    "serve": "python -m http.server 4180 --bind 127.0.0.1"
+  }
+}

@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AIM-120D · 三轴力矩研究 / MOMENT STUDY</title>
+<meta name="description" content="以 AIM-120D 弹体为例，交互展示俯仰力矩、偏航力矩与滚转力矩的矢量、系数与时间历程。Three.js，瑞士国际主义风格。">
+<meta property="og:title" content="AIM-120D · 三轴力矩研究 / MOMENT STUDY">
+<meta property="og:description" content="俯仰 / 偏航 / 滚转力矩的交互三维演示，几何取自 AIM120D.blend。">
+<meta property="og:type" content="website">
+<meta name="theme-color" content="#F1EFE9">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' fill='%23F1EFE9'/%3E%3Crect x='10' y='10' width='44' height='6' fill='%23141414'/%3E%3Crect x='10' y='22' width='6' height='32' fill='%23D92B1F'/%3E%3Crect x='22' y='22' width='32' height='6' fill='%23141414'/%3E%3Crect x='22' y='34' width='32' height='6' fill='%23141414'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<div class="page">
+
+  <header class="masthead">
+    <div class="mast-top">
+      <span class="kicker">AERODYNAMIC MOMENT STUDY</span>
+      <span class="kicker zh">气动力矩 · 三轴分量研究</span>
+      <span class="kicker num">NO. 001 — 2026</span>
+    </div>
+    <div class="mast-main">
+      <div class="mast-title">
+        <h1><span class="ink">AIM-</span><span class="red">120D</span></h1>
+        <div class="title-sub">
+          <span class="rule-short"></span>
+          <span>PITCH · YAW · ROLL MOMENTS</span>
+          <span class="zh">俯仰 &nbsp;/&nbsp; 偏航 &nbsp;/&nbsp; 滚转力矩</span>
+        </div>
+      </div>
+      <dl class="mast-meta">
+        <div><dt>PLATFORM</dt><dd>AIM-120D AMRAAM</dd></div>
+        <div><dt>BODY LENGTH</dt><dd>3.66 m</dd></div>
+        <div><dt>REF. Ø / SPAN</dt><dd>0.178 m / 0.526 m</dd></div>
+        <div><dt>MASS / CG</dt><dd>152 kg / 50 % L</dd></div>
+        <div><dt>GEOMETRY</dt><dd>AIM120D.blend</dd></div>
+      </dl>
+    </div>
+  </header>
+
+  <main class="stage">
+
+    <section class="viewport" id="viewport">
+      <canvas id="gl"></canvas>
+      <div class="vp-labels" id="labels"></div>
+
+      <div class="vp-top">
+        <div class="fig">FIG. 01 <span>力矩矢量 / MOMENT VECTORS</span></div>
+        <div class="vp-legend">
+          <span class="lg"><i class="ck c-yaw"></i><b>M<sub>z</sub></b> 偏航 YAW</span>
+          <span class="lg"><i class="ck c-pitch"></i><b>M<sub>y</sub></b> 俯仰 PITCH</span>
+          <span class="lg"><i class="ck c-roll"></i><b>M<sub>x</sub></b> 滚转 ROLL</span>
+        </div>
+      </div>
+
+      <div class="vp-bottom">
+        <div class="vp-note">BODY AXES &nbsp;+x FORWARD&nbsp; · &nbsp;+y RIGHT&nbsp; · &nbsp;+z DOWN<br>VECTOR LENGTH NORMALISED PER AXIS</div>
+        <div class="vp-views">
+          <button type="button" data-view="iso" class="on">ISO</button>
+          <button type="button" data-view="front">FRONT</button>
+          <button type="button" data-view="side">SIDE</button>
+        </div>
+      </div>
+
+      <div class="vp-hint">DRAG TO ORBIT &nbsp;·&nbsp; SCROLL TO ZOOM</div>
+    </section>
+
+    <aside class="rail">
+
+      <section class="mod">
+        <header class="mod-h"><span class="idx">01</span><h2>FLIGHT CONDITION</h2><span class="zh">飞行状态</span></header>
+
+        <div class="ctl" data-key="mach">
+          <div class="ctl-top"><label for="mach">MACH</label><output id="mach-v">0.85</output></div>
+          <input id="mach" type="range" min="0.3" max="3" step="0.01" value="0.85">
+        </div>
+        <div class="ctl" data-key="altitude">
+          <div class="ctl-top"><label for="altitude">ALTITUDE <span class="u">km</span></label><output id="altitude-v">5.0</output></div>
+          <input id="altitude" type="range" min="0" max="20000" step="100" value="5000">
+        </div>
+
+        <div class="derived">
+          <div><span>V<sub>∞</sub></span><b id="vinf">—</b><i>m/s</i></div>
+          <div><span>q<sub>∞</sub></span><b id="qinf">—</b><i>kPa</i></div>
+        </div>
+      </section>
+
+      <section class="mod">
+        <header class="mod-h"><span class="idx">02</span><h2>ATTITUDE / CONTROL</h2><span class="zh">姿态与操纵</span></header>
+
+        <div class="ctl" data-key="alpha">
+          <div class="ctl-top"><label for="alpha">α <span class="u">迎角</span></label><output id="alpha-v">8.0</output></div>
+          <input id="alpha" type="range" min="-20" max="25" step="0.5" value="8">
+        </div>
+        <div class="ctl" data-key="beta">
+          <div class="ctl-top"><label for="beta">β <span class="u">侧滑角</span></label><output id="beta-v">0.0</output></div>
+          <input id="beta" type="range" min="-20" max="20" step="0.5" value="0">
+        </div>
+        <div class="ctl" data-key="deltaE">
+          <div class="ctl-top"><label for="deltaE">δ<sub>e</sub> <span class="u">俯仰指令</span></label><output id="deltaE-v">0.0</output></div>
+          <input id="deltaE" type="range" min="-15" max="15" step="0.5" value="0">
+        </div>
+        <div class="ctl" data-key="deltaR">
+          <div class="ctl-top"><label for="deltaR">δ<sub>r</sub> <span class="u">偏航指令</span></label><output id="deltaR-v">0.0</output></div>
+          <input id="deltaR" type="range" min="-15" max="15" step="0.5" value="0">
+        </div>
+        <div class="ctl" data-key="deltaA">
+          <div class="ctl-top"><label for="deltaA">δ<sub>a</sub> <span class="u">滚转指令</span></label><output id="deltaA-v">0.0</output></div>
+          <input id="deltaA" type="range" min="-15" max="15" step="0.5" value="0">
+        </div>
+
+        <div class="presets">
+          <button type="button" data-preset="level">LEVEL</button>
+          <button type="button" data-preset="pull">PULL-UP</button>
+          <button type="button" data-preset="yaw">YAW</button>
+          <button type="button" data-preset="roll">ROLL</button>
+          <button type="button" data-preset="auto" id="auto-btn">AUTO</button>
+        </div>
+      </section>
+
+      <section class="mod mod-out">
+        <header class="mod-h"><span class="idx">03</span><h2>MOMENT OUTPUT</h2><span class="zh">力矩输出</span></header>
+
+        <div class="out" data-axis="z">
+          <i class="ck c-yaw"></i>
+          <div class="out-l"><b>M<sub>z</sub></b><em>偏航 YAW</em></div>
+          <div class="out-v"><b id="mz">0.0</b><span>N·m</span></div>
+          <div class="out-c">C<sub>n</sub> <b id="cn">0.000</b></div>
+        </div>
+        <div class="out" data-axis="y">
+          <i class="ck c-pitch"></i>
+          <div class="out-l"><b>M<sub>y</sub></b><em>俯仰 PITCH</em></div>
+          <div class="out-v"><b id="my">0.0</b><span>N·m</span></div>
+          <div class="out-c">C<sub>m</sub> <b id="cm">0.000</b></div>
+        </div>
+        <div class="out" data-axis="x">
+          <i class="ck c-roll"></i>
+          <div class="out-l"><b>M<sub>x</sub></b><em>滚转 ROLL</em></div>
+          <div class="out-v"><b id="mx">0.0</b><span>N·m</span></div>
+          <div class="out-c">C<sub>l</sub> <b id="cl">0.000</b></div>
+        </div>
+
+        <div class="rates">
+          <div><span>ω<sub>x</sub></span><b id="wx">0.0</b><i>°/s</i></div>
+          <div><span>ω<sub>y</sub></span><b id="wy">0.0</b><i>°/s</i></div>
+          <div><span>ω<sub>z</sub></span><b id="wz">0.0</b><i>°/s</i></div>
+        </div>
+        <p class="rates-note">STEADY-STATE RATE · 稳态角速度</p>
+      </section>
+
+    </aside>
+
+    <section class="charts">
+      <div class="chart-cell">
+        <div class="chart-h"><span class="ck c-yaw"></span><h3>M<sub>z</sub> &nbsp;YAW MOMENT</h3><span class="zh">偏航力矩 · 时间历程</span></div>
+        <canvas id="chart-z"></canvas>
+      </div>
+      <div class="chart-cell">
+        <div class="chart-h"><span class="ck c-pitch"></span><h3>M<sub>y</sub> &nbsp;PITCH MOMENT</h3><span class="zh">俯仰力矩 · 时间历程</span></div>
+        <canvas id="chart-y"></canvas>
+      </div>
+      <div class="chart-cell">
+        <div class="chart-h"><span class="ck c-roll"></span><h3>M<sub>x</sub> &nbsp;ROLL MOMENT</h3><span class="zh">滚转力矩 · 时间历程</span></div>
+        <canvas id="chart-x"></canvas>
+      </div>
+    </section>
+
+  </main>
+
+  <section class="doc">
+
+    <header class="doc-h"><span class="idx">04</span><h2>THE THREE MOMENTS</h2><span class="zh">三轴气动力矩的定义与符号</span></header>
+
+    <div class="doc-grid">
+      <article>
+        <div class="doc-letter c-roll">M<sub>x</sub></div>
+        <h3>ROLL MOMENT <span>滚转力矩</span></h3>
+        <p>绕弹体纵轴 x 的力矩。它由副翼（本模型中由尾翼差动等效）与侧滑耦合产生，决定弹体的滚转角速度与滚转姿态。右翼下沉为正。</p>
+        <div class="eq">M<sub>x</sub> = q<sub>∞</sub> · S · b · C<sub>l</sub></div>
+      </article>
+      <article>
+        <div class="doc-letter c-pitch">M<sub>y</sub></div>
+        <h3>PITCH MOMENT <span>俯仰力矩</span></h3>
+        <p>绕弹体横轴 y 的力矩。迎角与升降舵偏转改变尾部法向力，从而绕质心产生抬头或低头力矩；静稳定弹体的 C<sub>mα</sub> 为负。</p>
+        <div class="eq">M<sub>y</sub> = q<sub>∞</sub> · S · d · C<sub>m</sub></div>
+      </article>
+      <article>
+        <div class="doc-letter c-yaw">M<sub>z</sub></div>
+        <h3>YAW MOMENT <span>偏航力矩</span></h3>
+        <p>绕弹体法向轴 z 的力矩。由侧滑角与方向舵产生，决定弹体在水平面内的指向；航向静稳定的 C<sub>nβ</sub> 为正。</p>
+        <div class="eq">M<sub>z</sub> = q<sub>∞</sub> · S · d · C<sub>n</sub></div>
+      </article>
+    </div>
+
+    <div class="doc-sub">
+      <p><b>坐标约定</b> 弹体坐标系 O-xyz 为右手系：+x 指向弹头，+y 指向右翼，+z 指向弹体下方。按右手定则，绕 +x 的正力矩使右翼下沉，绕 +y 的正力矩使弹头抬起，绕 +z 的正力矩使弹头右偏。图中力矩矢量从质心（CG）起绘，长度按各轴独立量程归一，仅示意方向与相对大小。</p>
+    </div>
+
+    <header class="doc-h"><span class="idx">05</span><h2>AERODYNAMIC MODEL</h2><span class="zh">线性气动导数模型</span></header>
+
+    <div class="model-grid">
+      <div class="model-text">
+        <p>页面采用线性气动导数模型：力矩系数由静稳定项、操纵项与角速度阻尼项叠加，再乘以动压换算为力矩。动压 <span class="mono">q<sub>∞</sub> = ½ ρ V²</span> 由 ISA 标准大气与马赫数给出。</p>
+        <div class="eqblock">
+          <div class="eq">C<sub>l</sub> = C<sub>lβ</sub>·β + C<sub>lδa</sub>·δ<sub>a</sub> + C<sub>lp</sub>·(p·b / 2V) + C<sub>lδr</sub>·δ<sub>r</sub></div>
+          <div class="eq">C<sub>m</sub> = C<sub>m0</sub> + C<sub>mα</sub>·α + C<sub>mδe</sub>·δ<sub>e</sub> + C<sub>mq</sub>·(q·d / 2V)</div>
+          <div class="eq">C<sub>n</sub> = C<sub>nβ</sub>·β + C<sub>nδr</sub>·δ<sub>r</sub> + C<sub>nr</sub>·(r·b / 2V)</div>
+        </div>
+        <p class="fine">参考面积 S = πd²/4；俯仰/偏航参考长度取弹径 d，滚转参考长度取翼展 b。舵偏输入为控制指令角（°），正指令产生同号力矩。α、β 超过 18° 后按平滑因子衰减，近似非线性失速。系数为公开资料量级估算，用于教学演示，非风洞或 CFD 结果。</p>
+      </div>
+      <table class="deriv">
+        <thead><tr><th>DERIVATIVE</th><th>VALUE</th><th>UNIT</th><th>ROLE</th></tr></thead>
+        <tbody>
+          <tr><td>C<sub>Nα</sub></td><td>14.0</td><td>1/rad</td><td>法向力斜率</td></tr>
+          <tr><td>C<sub>mα</sub></td><td>−2.20</td><td>1/rad</td><td>俯仰静稳定</td></tr>
+          <tr><td>C<sub>mδe</sub></td><td>+3.20</td><td>1/rad</td><td>升降舵效率</td></tr>
+          <tr><td>C<sub>mq</sub></td><td>−1200</td><td>1/rad</td><td>俯仰阻尼</td></tr>
+          <tr><td>C<sub>nβ</sub></td><td>+2.20</td><td>1/rad</td><td>航向静稳定</td></tr>
+          <tr><td>C<sub>nδr</sub></td><td>+3.20</td><td>1/rad</td><td>方向舵效率</td></tr>
+          <tr><td>C<sub>nr</sub></td><td>−1200</td><td>1/rad</td><td>偏航阻尼</td></tr>
+          <tr><td>C<sub>lδa</sub></td><td>+0.030</td><td>1/rad</td><td>滚转操纵效率</td></tr>
+          <tr><td>C<sub>lp</sub></td><td>−2.00</td><td>1/rad</td><td>滚转阻尼</td></tr>
+          <tr><td>C<sub>lβ</sub></td><td>−0.010</td><td>1/rad</td><td>侧滑滚转耦合</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <header class="doc-h"><span class="idx">06</span><h2>GEOMETRY PROVENANCE</h2><span class="zh">几何来源与处理链</span></header>
+
+    <div class="prov-grid">
+      <div class="prov-item"><span>SOURCE FILE</span><b>AIM120D.blend</b><em>Blender 2.70 · 爱给网免费模型</em></div>
+      <div class="prov-item"><span>CONVERSION</span><b>.blend → .obj</b><em>Blender OBJ exporter</em></div>
+      <div class="prov-item"><span>MESH</span><b>752 v / 682 f</b><em>→ 1 436 triangles</em></div>
+      <div class="prov-item"><span>SCALE</span><b>0.043979 m/unit</b><em>按弹长 3.66 m 归一</em></div>
+      <div class="prov-item"><span>SPAN / Ø</span><b>0.507 m / 0.215 m</b><em>X 形尾翼布局</em></div>
+      <div class="prov-item"><span>ASSET</span><b><a class="dl" href="assets/AIM120D.obj" download>aim120d.obj ↓</a></b><em>原始网格随页面提供 · 62 KB</em></div>
+    </div>
+
+    <div class="doc-sub">
+      <p><b>关于模型</b> 页面显示的弹体几何直接来自用户提供的 <span class="mono">AIM120D.blend</span>。由于浏览器无法直接读取 .blend，处理链为：Blender 导出的同目录 OBJ 网格 → 三角化（n 边形扇面）→ 按 40° 折痕角拆分并重算法线 → 平移到质心、按弹长 3.66 m 归一化 → 生成 <span class="mono">js/missile.mesh.js</span>。模型中段为固定翼、尾段为操纵尾翼，呈 AIM-120 家族的 X 形布局。所有气动系数均为演示用估算值，几何比例与原文件一致，未做二次造型。</p>
+    </div>
+
+  </section>
+
+  <footer class="foot">
+    <span>© 2026 · AIM-120D MOMENT STUDY</span>
+    <span class="foot-mid">VANILLA JS · THREE.JS · STATIC, NO BUILD</span>
+    <a id="repo-link" href="https://github.com/Kuada1/aim120d-moments" target="_blank" rel="noopener">GITHUB ↗</a>
+  </footer>
+
+</div>
+
+<script src="js/three.min.js"></script>
+<script src="js/missile.mesh.js"></script>
+<script src="js/aero.js"></script>
+<script src="js/charts.js"></script>
+<script src="js/scene.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>

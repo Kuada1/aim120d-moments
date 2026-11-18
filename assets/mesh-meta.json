@@ -1,0 +1,19 @@
+{
+ "source": "AIM120D.blend (Blender 2.70, aigei.com free model)",
+ "converted": "AIM120D.obj",
+ "sourceVertices": 752,
+ "sourceFaces": 682,
+ "triangles": 1436,
+ "renderVertices": 1434,
+ "lengthM": 3.66,
+ "bodyDiameterM": 0.2151,
+ "finSpanM": 0.5066,
+ "massKg": 152,
+ "cgFromNose": 0.5,
+ "scaleMperUnit": 0.043979,
+ "bboxM": {
+  "x": 3.66,
+  "y": 0.361,
+  "z": 0.356
+ }
+}
