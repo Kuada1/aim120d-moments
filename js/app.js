@@ -117,6 +117,26 @@
     if (k >= 1) tween = null;
   }
 
+  function resetAll() {
+    stopAuto();
+    tween = null;
+    state.mach = 0.85;
+    state.altitude = 5000;
+    state.alpha = 8;
+    state.beta = 0;
+    state.deltaE = 0;
+    state.deltaR = 0;
+    state.deltaA = 0;
+    for (var i = 0; i < CTRL.length; i++) syncSlider(CTRL[i]);
+    rollAngle = 0;
+    if (charts) { charts.x.clear(); charts.y.clear(); charts.z.clear(); }
+    if (scene) scene.setView('iso');
+    var pb = document.querySelectorAll('.presets button[data-preset]');
+    for (var j = 0; j < pb.length; j++) pb[j].classList.remove('on');
+    var vb = document.querySelectorAll('.vp-views button[data-view]');
+    for (var k = 0; k < vb.length; k++) vb[k].classList.toggle('on', vb[k].getAttribute('data-view') === 'iso');
+  }
+
   function startAuto() {
     auto.on = true;
     auto.idx = -1;
@@ -140,19 +160,33 @@
   }
 
   // ---------- HUD
+  // Display frame: Soviet/Chinese body axes (+x forward, +y up, +z right).
+  // The aero core works in +y right / +z down, so pitch = My_us, yaw = -Mz_us.
+  function displayMoments(res) {
+    return {
+      roll: res.Mx,
+      pitch: res.My,
+      yaw: -res.Mz,
+      cl: res.Cl,
+      cm: res.Cm,
+      cn: -res.Cn
+    };
+  }
+
   function updateHUD(res, rates) {
-    $('mx').textContent = fmt(res.Mx, 1);
-    $('my').textContent = fmt(res.My, 1);
-    $('mz').textContent = fmt(res.Mz, 1);
-    $('cl').textContent = fmt(res.Cl, 4);
-    $('cm').textContent = fmt(res.Cm, 4);
-    $('cn').textContent = fmt(res.Cn, 4);
+    var d = displayMoments(res);
+    $('mz').textContent = fmt(d.pitch, 1);
+    $('my').textContent = fmt(d.yaw, 1);
+    $('mx').textContent = fmt(d.roll, 1);
+    $('cl').textContent = fmt(d.cl, 4);
+    $('cm').textContent = fmt(d.cm, 4);
+    $('cn').textContent = fmt(d.cn, 4);
     $('vinf').textContent = Math.round(res.V);
     $('qinf').textContent = (res.q / 1000).toFixed(1);
 
     $('wx').textContent = fmt(rates.p / DEG, 1);
-    $('wy').textContent = fmt(rates.q / DEG, 1);
-    $('wz').textContent = fmt(rates.r / DEG, 1);
+    $('wy').textContent = fmt(-rates.r / DEG, 1);
+    $('wz').textContent = fmt(rates.q / DEG, 1);
   }
 
   // ---------- init
@@ -166,9 +200,9 @@
 
     scene = new MissileScene($('gl'), $('labels'));
     charts = {
-      x: new MomentChart($('chart-x'), { color: '#DE9E0A', minRange: 3, maxSamples: 220, unit: 'N\u00b7m' }),
-      y: new MomentChart($('chart-y'), { color: '#D92B1F', minRange: 60, maxSamples: 220, unit: 'N\u00b7m' }),
-      z: new MomentChart($('chart-z'), { color: '#1B3FA8', minRange: 60, maxSamples: 220, unit: 'N\u00b7m' })
+      x: new MomentChart($('chart-x'), { color: '#D99A0A', minRange: 3, maxSamples: 220, unit: 'N\u00b7m' }),
+      y: new MomentChart($('chart-y'), { color: '#1B3FA8', minRange: 60, maxSamples: 220, unit: 'N\u00b7m' }),
+      z: new MomentChart($('chart-z'), { color: '#D92B1F', minRange: 60, maxSamples: 220, unit: 'N\u00b7m' })
     };
 
     // bind sliders
@@ -205,6 +239,9 @@
         });
       })(pb[j]);
     }
+
+    // one-click restore
+    $('reset-btn').addEventListener('click', resetAll);
 
     // views
     var vb = document.querySelectorAll('.vp-views button[data-view]');
@@ -285,7 +322,7 @@
     if (rollAngle < -Math.PI * 2) rollAngle += Math.PI * 2;
 
     scene.setState({
-      Mx: res.Mx, My: res.My, Mz: res.Mz,
+      roll: res.Mx, pitch: res.My, yaw: -res.Mz,
       alpha: state.alpha, beta: state.beta,
       rollAngle: rollAngle,
       vInf: res.V
@@ -298,8 +335,8 @@
     chartAcc += dt;
     if (chartAcc > 0.05) {
       charts.x.push(res.Mx);
-      charts.y.push(res.My);
-      charts.z.push(res.Mz);
+      charts.y.push(-res.Mz);
+      charts.z.push(res.My);
       chartAcc = 0;
     }
   }

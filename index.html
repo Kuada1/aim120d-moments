@@ -21,7 +21,7 @@
         <span class="kicker">AERODYNAMIC MOMENT STUDY · 气动力矩研究</span>
         <h1>AIM-<span class="red">120D</span></h1>
       </div>
-      <p class="mast-sub">俯仰 · 偏航 · 滚转力矩<br><span>PITCH / YAW / ROLL MOMENTS</span></p>
+      <p class="mast-sub">俯仰 · 偏航 · 滚转力矩<br><span>PITCH / YAW / ROLL MOMENTS · 苏系弹体坐标系</span></p>
       <dl class="mast-meta">
         <div><dt>PLATFORM</dt><dd>AIM-120D</dd></div>
         <div><dt>LENGTH</dt><dd>3.66 m</dd></div>
@@ -41,14 +41,14 @@
       <div class="vp-top">
         <div class="fig">FIG. 01 <span>力矩矢量 / MOMENT VECTORS</span></div>
         <div class="vp-legend">
-          <span class="lg"><i class="ck c-yaw"></i><b>M<sub>z</sub></b> 偏航 YAW</span>
-          <span class="lg"><i class="ck c-pitch"></i><b>M<sub>y</sub></b> 俯仰 PITCH</span>
+          <span class="lg"><i class="ck c-pitch"></i><b>M<sub>z</sub></b> 俯仰 PITCH</span>
+          <span class="lg"><i class="ck c-yaw"></i><b>M<sub>y</sub></b> 偏航 YAW</span>
           <span class="lg"><i class="ck c-roll"></i><b>M<sub>x</sub></b> 滚转 ROLL</span>
         </div>
       </div>
 
       <div class="vp-bottom">
-        <div class="vp-note">BODY AXES &nbsp;+x FORWARD&nbsp; · &nbsp;+y RIGHT&nbsp; · &nbsp;+z DOWN<br>VECTOR LENGTH NORMALISED PER AXIS</div>
+        <div class="vp-note">BODY AXES · SOVIET FRAME / 苏系<br>+x FORWARD &nbsp;·&nbsp; +y UP &nbsp;·&nbsp; +z RIGHT<br>VECTOR LENGTH NORMALISED PER AXIS</div>
         <div class="vp-views">
           <button type="button" data-view="iso" class="on">ISO</button>
           <button type="button" data-view="front">FRONT</button>
@@ -110,6 +110,7 @@
           <button type="button" data-preset="yaw">YAW</button>
           <button type="button" data-preset="roll">ROLL</button>
           <button type="button" data-preset="auto" id="auto-btn">AUTO</button>
+          <button type="button" id="reset-btn" class="reset">RESET ↺</button>
         </div>
       </section>
 
@@ -117,16 +118,16 @@
         <header class="mod-h"><span class="idx">03</span><h2>MOMENT OUTPUT</h2><span class="zh">力矩输出</span></header>
 
         <div class="out" data-axis="z">
-          <i class="ck c-yaw"></i>
-          <div class="out-l"><b>M<sub>z</sub></b><em>偏航 YAW</em></div>
+          <i class="ck c-pitch"></i>
+          <div class="out-l"><b>M<sub>z</sub></b><em>俯仰 PITCH</em></div>
           <div class="out-v"><b id="mz">0.0</b><span>N·m</span></div>
-          <div class="out-c">C<sub>n</sub> <b id="cn">0.000</b></div>
+          <div class="out-c">C<sub>m</sub> <b id="cm">0.000</b></div>
         </div>
         <div class="out" data-axis="y">
-          <i class="ck c-pitch"></i>
-          <div class="out-l"><b>M<sub>y</sub></b><em>俯仰 PITCH</em></div>
+          <i class="ck c-yaw"></i>
+          <div class="out-l"><b>M<sub>y</sub></b><em>偏航 YAW</em></div>
           <div class="out-v"><b id="my">0.0</b><span>N·m</span></div>
-          <div class="out-c">C<sub>m</sub> <b id="cm">0.000</b></div>
+          <div class="out-c">C<sub>n</sub> <b id="cn">0.000</b></div>
         </div>
         <div class="out" data-axis="x">
           <i class="ck c-roll"></i>
@@ -147,11 +148,11 @@
 
     <section class="charts">
       <div class="chart-cell">
-        <div class="chart-h"><span class="ck c-yaw"></span><h3>M<sub>z</sub> &nbsp;YAW MOMENT</h3><span class="zh">偏航力矩 · 时间历程</span></div>
+        <div class="chart-h"><span class="ck c-pitch"></span><h3>M<sub>z</sub> &nbsp;PITCH MOMENT</h3><span class="zh">俯仰力矩 · 时间历程</span></div>
         <canvas id="chart-z"></canvas>
       </div>
       <div class="chart-cell">
-        <div class="chart-h"><span class="ck c-pitch"></span><h3>M<sub>y</sub> &nbsp;PITCH MOMENT</h3><span class="zh">俯仰力矩 · 时间历程</span></div>
+        <div class="chart-h"><span class="ck c-yaw"></span><h3>M<sub>y</sub> &nbsp;YAW MOMENT</h3><span class="zh">偏航力矩 · 时间历程</span></div>
         <canvas id="chart-y"></canvas>
       </div>
       <div class="chart-cell">
@@ -174,21 +175,21 @@
         <div class="eq">M<sub>x</sub> = q<sub>∞</sub> · S · b · C<sub>l</sub></div>
       </article>
       <article>
-        <div class="doc-letter t-pitch">M<sub>y</sub></div>
+        <div class="doc-letter t-pitch">M<sub>z</sub></div>
         <h3>PITCH MOMENT <span>俯仰力矩</span></h3>
-        <p>绕弹体横轴 y 的力矩。迎角与升降舵偏转改变尾部法向力，从而绕质心产生抬头或低头力矩；静稳定弹体的 C<sub>mα</sub> 为负。</p>
-        <div class="eq">M<sub>y</sub> = q<sub>∞</sub> · S · d · C<sub>m</sub></div>
+        <p>绕弹体横向轴 z 的力矩。迎角与升降舵偏转改变尾部法向力，从而绕质心产生抬头或低头力矩；静稳定弹体的 C<sub>mα</sub> 为负。</p>
+        <div class="eq">M<sub>z</sub> = q<sub>∞</sub> · S · d · C<sub>m</sub></div>
       </article>
       <article>
-        <div class="doc-letter t-yaw">M<sub>z</sub></div>
+        <div class="doc-letter t-yaw">M<sub>y</sub></div>
         <h3>YAW MOMENT <span>偏航力矩</span></h3>
-        <p>绕弹体法向轴 z 的力矩。由侧滑角与方向舵产生，决定弹体在水平面内的指向；航向静稳定的 C<sub>nβ</sub> 为正。</p>
-        <div class="eq">M<sub>z</sub> = q<sub>∞</sub> · S · d · C<sub>n</sub></div>
+        <p>绕弹体法向轴 y 的力矩。由侧滑角与方向舵产生，决定弹体在水平面内的指向；正侧滑（机头偏左）产生向风的右偏力矩，故静稳定的 C<sub>nβ</sub> 为负。</p>
+        <div class="eq">M<sub>y</sub> = q<sub>∞</sub> · S · d · C<sub>n</sub></div>
       </article>
     </div>
 
     <div class="doc-sub">
-      <p><b>坐标约定</b> 弹体坐标系 O-xyz 为右手系：+x 指向弹头，+y 指向右翼，+z 指向弹体下方。按右手定则，绕 +x 的正力矩使右翼下沉，绕 +y 的正力矩使弹头抬起，绕 +z 的正力矩使弹头右偏。图中力矩矢量从质心（CG）起绘，长度按各轴独立量程归一，仅示意方向与相对大小。</p>
+      <p><b>坐标约定（苏系 / 俄中教材惯例）</b> 弹体坐标系 O-xyz 为右手系：+x 指向弹头，+y 指向弹体上方，+z 指向弹体右侧。按右手定则：绕 +x 的正力矩使右翼下沉（滚转），绕 +z 的正力矩使弹头抬起（俯仰），绕 +y 的正力矩使弹头左偏（偏航）。图中力矩矢量从质心（CG）起绘，长度按各轴独立量程归一，仅示意方向与相对大小。</p>
     </div>
 
     <header class="doc-h"><span class="idx">05</span><h2>AERODYNAMIC MODEL</h2><span class="zh">线性气动导数模型</span></header>
@@ -201,7 +202,8 @@
           <div class="eq">C<sub>m</sub> = C<sub>m0</sub> + C<sub>mα</sub>·α + C<sub>mδe</sub>·δ<sub>e</sub> + C<sub>mq</sub>·(q·d / 2V)</div>
           <div class="eq">C<sub>n</sub> = C<sub>nβ</sub>·β + C<sub>nδr</sub>·δ<sub>r</sub> + C<sub>nr</sub>·(r·b / 2V)</div>
         </div>
-        <p class="fine">参考面积 S = πd²/4；俯仰/偏航参考长度取弹径 d，滚转参考长度取翼展 b。舵偏输入为控制指令角（°），正指令产生同号力矩。α、β 超过 18° 后按平滑因子衰减，近似非线性失速。系数为公开资料量级估算，用于教学演示，非风洞或 CFD 结果。</p>
+        <p class="fine">参考面积 S = πd²/4；俯仰/偏航参考长度取弹径 d，滚转参考长度取翼展 b。舵偏输入为控制指令角（°），正指令产生同号指令力矩。α、β 超过 18° 后按平滑因子衰减，近似非线性失速。系数为公开资料量级估算，用于教学演示，非风洞或 CFD 结果。</p>
+        <p class="fine"><b>符号说明</b> C<sub>n</sub> 采用苏系符号（+y 向上、机头左偏为正），故 C<sub>nβ</sub> &lt; 0 才表示航向静稳定；它与美系（+y 向右、+z 向下）的偏航力矩系数互为相反数。</p>
       </div>
       <table class="deriv">
         <thead><tr><th>DERIVATIVE</th><th>VALUE</th><th>UNIT</th><th>ROLE</th></tr></thead>
@@ -210,8 +212,8 @@
           <tr><td>C<sub>mα</sub></td><td>−2.20</td><td>1/rad</td><td>俯仰静稳定</td></tr>
           <tr><td>C<sub>mδe</sub></td><td>+3.20</td><td>1/rad</td><td>升降舵效率</td></tr>
           <tr><td>C<sub>mq</sub></td><td>−1200</td><td>1/rad</td><td>俯仰阻尼</td></tr>
-          <tr><td>C<sub>nβ</sub></td><td>+2.20</td><td>1/rad</td><td>航向静稳定</td></tr>
-          <tr><td>C<sub>nδr</sub></td><td>+3.20</td><td>1/rad</td><td>方向舵效率</td></tr>
+          <tr><td>C<sub>nβ</sub></td><td>−2.20</td><td>1/rad</td><td>航向静稳定</td></tr>
+          <tr><td>C<sub>nδr</sub></td><td>−3.20</td><td>1/rad</td><td>方向舵效率</td></tr>
           <tr><td>C<sub>nr</sub></td><td>−1200</td><td>1/rad</td><td>偏航阻尼</td></tr>
           <tr><td>C<sub>lδa</sub></td><td>+0.030</td><td>1/rad</td><td>滚转操纵效率</td></tr>
           <tr><td>C<sub>lp</sub></td><td>−2.00</td><td>1/rad</td><td>滚转阻尼</td></tr>

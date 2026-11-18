@@ -68,6 +68,22 @@
     return g;
   }
 
+  function makeAxisRod(dir, len, color) {
+    var g = new THREE.Group();
+    var mat = new THREE.MeshBasicMaterial({ color: color, depthTest: false, depthWrite: false, toneMapped: false });
+    var shaft = new THREE.Mesh(new THREE.CylinderGeometry(0.0085, 0.0085, len - 0.1, 10), mat);
+    shaft.position.y = (len - 0.1) / 2;
+    var head = new THREE.Mesh(new THREE.ConeGeometry(0.026, 0.1, 16), mat);
+    head.position.y = len - 0.05;
+    shaft.renderOrder = 14;
+    head.renderOrder = 14;
+    g.add(shaft);
+    g.add(head);
+    g.quaternion.setFromUnitVectors(UP, dir.clone().normalize());
+    g.renderOrder = 14;
+    return g;
+  }
+
   function setArrow(g, dir, len) {
     if (len < 0.025) { g.visible = false; return; }
     g.visible = true;
@@ -181,14 +197,12 @@
     nozzle.position.x = -1.836;
     group.add(nozzle);
 
-    // ---- body axes
-    var axisMat = new THREE.LineBasicMaterial({ color: PALETTE.ink, transparent: true, opacity: 0.38 });
-    var axisPts = [
-      new THREE.Vector3(0, 0, 0), new THREE.Vector3(1.02, 0, 0),
-      new THREE.Vector3(0, 0, 0), new THREE.Vector3(0, 0, 1.02),
-      new THREE.Vector3(0, 0, 0), new THREE.Vector3(0, -1.02, 0)
-    ];
-    group.add(new THREE.LineSegments(new THREE.BufferGeometry().setFromPoints(axisPts), axisMat));
+    // ---- body axes: Soviet frame (+x forward, +y up, +z right), thick and always visible
+    var axes = new THREE.Group();
+    axes.add(makeAxisRod(new THREE.Vector3(1, 0, 0), 0.92, 0x1B1B19));
+    axes.add(makeAxisRod(new THREE.Vector3(0, 1, 0), 0.8, 0x1B1B19));
+    axes.add(makeAxisRod(new THREE.Vector3(0, 0, 1), 0.9, 0x1B1B19));
+    group.add(axes);
 
     // CG marker
     var cgMat = new THREE.MeshBasicMaterial({ color: PALETTE.ink, depthTest: false, toneMapped: false });
@@ -202,9 +216,9 @@
 
     // ---- moment arrows (body frame, always drawn on top)
     var arrows = {
-      x: makeArrow(PALETTE.roll),
-      y: makeArrow(PALETTE.pitch),
-      z: makeArrow(PALETTE.yaw)
+      x: makeArrow(PALETTE.roll),  // Mx roll  -> +x
+      y: makeArrow(PALETTE.yaw),   // My yaw   -> +y
+      z: makeArrow(PALETTE.pitch)  // Mz pitch -> +z
     };
     group.add(arrows.x); group.add(arrows.y); group.add(arrows.z);
     this.arrows = arrows;
@@ -244,24 +258,6 @@
       new THREE.LineBasicMaterial({ color: 0x8A887D, transparent: true, opacity: 0.85 })
     ));
 
-    // ---- velocity reference
-    var velY = 0.82;
-    var velPts = [];
-    for (var s = -1.15; s < 1.95; s += 0.105) {
-      velPts.push(new THREE.Vector3(s, velY, 0), new THREE.Vector3(s + 0.052, velY, 0));
-    }
-    scene.add(new THREE.LineSegments(
-      new THREE.BufferGeometry().setFromPoints(velPts),
-      new THREE.LineBasicMaterial({ color: 0x4A4943, transparent: true, opacity: 0.5 })
-    ));
-    var velHead = new THREE.Mesh(
-      new THREE.ConeGeometry(0.024, 0.1, 12),
-      new THREE.MeshBasicMaterial({ color: 0x4A4943 })
-    );
-    velHead.rotation.z = -Math.PI / 2;
-    velHead.position.set(2.0, velY, 0);
-    scene.add(velHead);
-
     // ---- labels
     function label(cls, html, dx, dy) {
       var el = document.createElement('div');
@@ -272,14 +268,13 @@
     }
     this.labels = {
       mx: label('c-roll', '<span class="dot"></span>M<sub>x</sub> <b data-v>0.0</b><span class="u">N·m</span>', 22, -8),
-      my: label('c-pitch', '<span class="dot"></span>M<sub>y</sub> <b data-v>0.0</b><span class="u">N·m</span>', 24, 4),
-      mz: label('c-yaw', '<span class="dot"></span>M<sub>z</sub> <b data-v>0.0</b><span class="u">N·m</span>', 20, 16),
+      my: label('c-yaw', '<span class="dot"></span>M<sub>y</sub> <b data-v>0.0</b><span class="u">N·m</span>', 24, 4),
+      mz: label('c-pitch', '<span class="dot"></span>M<sub>z</sub> <b data-v>0.0</b><span class="u">N·m</span>', 20, 16),
       cg: label('ink', '<span class="dot"></span>CG', -6, 17),
-      vinf: label('ink', 'V<sub>∞</sub> <b data-v>—</b><span class="u">m/s</span>', 0, -24),
       dim: label('dim', 'L 3.66 m', 0, -13),
-      ax: label('ink', 'x', 12, -2),
-      ay: label('ink', 'y', 12, -2),
-      az: label('ink', 'z', 12, -2)
+      ax: label('ink axis', 'x', 14, -2),
+      ay: label('ink axis', 'y', 10, -14),
+      az: label('ink axis', 'z', 14, -2)
     };
 
     this.bindEvents();
@@ -347,18 +342,18 @@
     var qRoll = new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(1, 0, 0), s.rollAngle);
     this.group.quaternion.copy(qYaw).multiply(qPitch).multiply(qRoll);
 
-    var sx = s.Mx >= 0 ? 1 : -1;
-    var sy = s.My >= 0 ? 1 : -1;
-    var sz = s.Mz >= 0 ? 1 : -1;
-    var lx = 0.2 + 0.92 * Math.min(1, Math.abs(s.Mx) / RANGES.x);
-    var ly = 0.2 + 0.92 * Math.min(1, Math.abs(s.My) / RANGES.y);
-    var lz = 0.2 + 0.92 * Math.min(1, Math.abs(s.Mz) / RANGES.z);
-    var dirX = new THREE.Vector3(sx, 0, 0);
-    var dirY = new THREE.Vector3(0, 0, sy);
-    var dirZ = new THREE.Vector3(0, -sz, 0); // body z = -Y
-    setArrow(this.arrows.x, dirX, Math.abs(s.Mx) < 0.12 ? 0 : lx);
-    setArrow(this.arrows.y, dirY, Math.abs(s.My) < 0.12 ? 0 : ly);
-    setArrow(this.arrows.z, dirZ, Math.abs(s.Mz) < 0.12 ? 0 : lz);
+    var sRoll = s.roll >= 0 ? 1 : -1;
+    var sPitch = s.pitch >= 0 ? 1 : -1;
+    var sYaw = s.yaw >= 0 ? 1 : -1;
+    var lx = 0.2 + 0.92 * Math.min(1, Math.abs(s.roll) / RANGES.x);
+    var ly = 0.2 + 0.92 * Math.min(1, Math.abs(s.yaw) / RANGES.y);
+    var lz = 0.2 + 0.92 * Math.min(1, Math.abs(s.pitch) / RANGES.z);
+    var dirX = new THREE.Vector3(sRoll, 0, 0);   // Mx roll  -> +x
+    var dirY = new THREE.Vector3(0, sYaw, 0);    // My yaw   -> +y
+    var dirZ = new THREE.Vector3(0, 0, sPitch);  // Mz pitch -> +z
+    setArrow(this.arrows.x, dirX, Math.abs(s.roll) < 0.5 ? 0 : lx);
+    setArrow(this.arrows.y, dirY, Math.abs(s.yaw) < 1.5 ? 0 : ly);
+    setArrow(this.arrows.z, dirZ, Math.abs(s.pitch) < 1.5 ? 0 : lz);
 
     this._tips = {
       mx: dirX.clone().multiplyScalar(lx),
@@ -367,13 +362,12 @@
     };
 
     var f = function (v) { return (v >= 0 ? '' : '\u2212') + Math.abs(v).toFixed(1); };
-    this.labels.mx.el.querySelector('[data-v]').textContent = f(s.Mx);
-    this.labels.my.el.querySelector('[data-v]').textContent = f(s.My);
-    this.labels.mz.el.querySelector('[data-v]').textContent = f(s.Mz);
-    this.labels.vinf.el.querySelector('[data-v]').textContent = Math.round(s.vInf);
-    this.labels.mx.visible = Math.abs(s.Mx) > 0.12;
-    this.labels.my.visible = Math.abs(s.My) > 0.12;
-    this.labels.mz.visible = Math.abs(s.Mz) > 0.12;
+    this.labels.mx.el.querySelector('[data-v]').textContent = f(s.roll);
+    this.labels.my.el.querySelector('[data-v]').textContent = f(s.yaw);
+    this.labels.mz.el.querySelector('[data-v]').textContent = f(s.pitch);
+    this.labels.mx.visible = Math.abs(s.roll) > 0.5;
+    this.labels.my.visible = Math.abs(s.yaw) > 1.5;
+    this.labels.mz.visible = Math.abs(s.pitch) > 1.5;
   };
 
   MissileScene.prototype.project = function (p) {
@@ -396,11 +390,10 @@
       [this.labels.my, tipWorld(this._tips.my), true],
       [this.labels.mz, tipWorld(this._tips.mz), true],
       [this.labels.cg, new THREE.Vector3(0, 0, 0), false],
-      [this.labels.vinf, new THREE.Vector3(1.42, 0.82, 0), false],
       [this.labels.dim, new THREE.Vector3(0, -0.66, 0), false],
-      [this.labels.ax, tipWorld(new THREE.Vector3(1.02, 0, 0)), false],
-      [this.labels.ay, tipWorld(new THREE.Vector3(0, 0, 1.02)), false],
-      [this.labels.az, tipWorld(new THREE.Vector3(0, -1.02, 0)), false]
+      [this.labels.ax, tipWorld(new THREE.Vector3(0.92, 0, 0)), false],
+      [this.labels.ay, tipWorld(new THREE.Vector3(0, 0.8, 0)), false],
+      [this.labels.az, tipWorld(new THREE.Vector3(0, 0, 0.9)), false]
     ];
     for (var i = 0; i < list.length; i++) {
       var lab = list[i][0], p = list[i][1], radial = list[i][2];
@@ -412,7 +405,7 @@
       if (radial) {
         var vx = s.x - cgS.x, vy = s.y - cgS.y;
         var vm = Math.hypot(vx, vy);
-        if (vm > 1) { px += vx / vm * 30; py += vy / vm * 30; }
+        if (vm > 1) { px += vx / vm * 36; py += vy / vm * 36; }
         else { px += lab.dx; py += lab.dy; }
       } else { px += lab.dx; py += lab.dy; }
       lab.el.style.transform = 'translate3d(' + px + 'px,' + py + 'px,0) translate(-50%,-50%)';
