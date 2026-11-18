@@ -231,7 +231,6 @@
     if (qs.get('preset')) setPreset(qs.get('preset'), true);
     if (qs.get('view')) scene.setView(qs.get('view'));
     if (qs.get('static') === '1') {
-      scene.autoRotate = false;
       stopAuto();
     }
 
@@ -247,11 +246,6 @@
       resizeTimer = setTimeout(onResize, 80);
     });
     onResize();
-
-    // autoplay for a lively first impression
-    if (qs.get('static') !== '1') {
-      setTimeout(function () { if (!auto.on) startAuto(); }, 2600);
-    }
 
     last = performance.now();
     window.__APP = { scene: scene, charts: charts, state: state, aero: Aero, getLast: function () { return lastRes; } };
